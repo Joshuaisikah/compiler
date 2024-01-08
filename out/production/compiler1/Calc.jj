@@ -1,0 +1,81 @@
+options {
+    LOOKAHEAD=1;
+    STATIC=false;
+}
+
+PARSER_BEGIN(ArithmeticParser)
+
+public class ArithmeticParser {
+    public static void main(String[] args) throws ParseException {
+        ArithmeticParser parser = new ArithmeticParser(System.in);
+        parser.Start();// Entry point for parsing the input.
+    }
+}
+
+PARSER_END(ArithmeticParser)
+
+TOKEN : {
+    <NUMBER: (["0"-"9"])+> 
+    | <PLUS: "+">
+    | <MINUS: "-">
+    | <MULTIPLY: "*">
+    | <DIVIDE: "/">
+    | <LPAREN: "(">
+    | <RPAREN: ")">
+    | <ERROR: ["a"-"z", "A"-"Z"] > // Token for non-mathematical expressions (strings)
+}
+
+void Start():
+{
+    int result;
+}
+{
+    result = Expression()
+    { System.out.println("Result: " + result); }
+}
+
+int Expression():
+{
+    int left, right;
+    Token op;
+}
+{
+    left = Term()
+    (
+        op = <PLUS> right = Term()
+        { left += right; }
+      | op = <MINUS> right = Term()
+        { left -= right; }
+    )*
+    { return left; }
+}
+
+int Term():
+{
+    int left, right;
+    Token op;
+}
+{
+    left = Factor()
+    (
+        op = <MULTIPLY> right = Factor()
+        { left *= right; }
+      | op = <DIVIDE> right = Factor()
+        { left /= right; }
+    )*
+    { return left; }
+}
+
+int Factor():
+{
+    Token t;
+}
+{
+    (
+        t = <MINUS> t = <NUMBER> // Handle negative numbers
+        { return -Integer.parseInt(t.image); }
+      | t = <NUMBER>
+        { return Integer.parseInt(t.image); }
+      | t = <LPAREN> Expression() t = <RPAREN>
+    )
+}
